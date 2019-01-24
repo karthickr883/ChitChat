@@ -2,6 +2,7 @@ package com.example.karthick.firebase;
 
 import android.Manifest;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +23,10 @@ import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.data.model.User;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -30,6 +35,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     FirebaseAuth.AuthStateListener authStateListener;
     FirebaseAuth firebaseAuth;
     public static int RC_SIGN_IN = 1;
+    public int RC_PICKER = 2;
     private static final String TAG = "MainActivity";
     ChildEventListener listener;
     public static final String ANONYMOUS = "anonymous";
@@ -53,8 +62,9 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton mPhotoPickerButton;
     private EditText mMessageEditText;
     private Button mSendButton;
-
+    FirebaseStorage storage;
     private String mUsername;
+    StorageReference mReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +74,8 @@ public class MainActivity extends AppCompatActivity {
         reference = database.getReference().child("messages");
         firebaseAuth = FirebaseAuth.getInstance();
         mUsername = ANONYMOUS;
-
+        storage = FirebaseStorage.getInstance();
+        mReference = storage.getReference().child("chat_photos");
         // Initialize references to views
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mMessageListView = (ListView) findViewById(R.id.messageListView);
@@ -84,6 +95,11 @@ public class MainActivity extends AppCompatActivity {
         mPhotoPickerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/jpeg");
+                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                startActivityForResult(intent, RC_PICKER);
+
                 // TODO: Fire an intent to show an image picker
             }
         });
@@ -242,8 +258,25 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Sign In cancelled", Toast.LENGTH_LONG).show();
                 finish();
             }
-        }
+        } else if (requestCode == RC_PICKER && resultCode == RESULT_OK) {
+            Uri url = data.getData();
+            // First creating the place or the ref at which the file will be saved
+            final StorageReference ref = mReference.child(url.getLastPathSegment());
+            UploadTask uploadTask = ref.putFile(url);
+            Task<Uri> uriTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                @Override
+                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                    if (!task.isSuccessful())
+                        throw task.getException();
+                    else
+                        return ref.getDownloadUrl();
+                }
+            });
 
+            FriendlyMessage message = new FriendlyMessage(null, mUsername, uriTask.toString());
+            reference.push().setValue(message);
+            mMessageAdapter.notifyDataSetChanged();
+        }
         super.onActivityResult(requestCode, resultCode, data);
     }
 

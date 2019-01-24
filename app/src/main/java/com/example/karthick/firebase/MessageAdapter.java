@@ -2,11 +2,13 @@ package com.example.karthick.firebase;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -28,9 +30,10 @@ public class MessageAdapter extends ArrayAdapter<FriendlyMessage> {
         TextView authorTextView = (TextView) convertView.findViewById(R.id.nameTextView);
 
         FriendlyMessage message = getItem(position);
-
+        //    Log.i("URL", message.getPhotoUrl() + " "+message.getText() + " GOT");
         boolean isPhoto = message.getPhotoUrl() != null;
         if (isPhoto) {
+            Log.i("CHECKING", message.getPhotoUrl());
             messageTextView.setVisibility(View.GONE);
             photoImageView.setVisibility(View.VISIBLE);
             Glide.with(photoImageView.getContext())
