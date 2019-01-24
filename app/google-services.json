@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "370994324953",
+    "firebase_url": "https://numeric-cinema-211212.firebaseio.com",
+    "project_id": "numeric-cinema-211212",
+    "storage_bucket": "numeric-cinema-211212.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:370994324953:android:e3f4348eaf197558",
+        "android_client_info": {
+          "package_name": "com.example.karthick.firebase"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "370994324953-g5bs1ojme2oljdvl3cqr8215ag1qvmjl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCD33AItiPwG0NUSASfHUP2d9hlgfZFP9w"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
