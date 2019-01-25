@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -262,25 +263,41 @@ public class MainActivity extends AppCompatActivity {
             Uri url = data.getData();
             // First creating the place or the ref at which the file will be saved
             final StorageReference ref = mReference.child(url.getLastPathSegment());
-            UploadTask uploadTask = ref.putFile(url);
-            ref.putFile(url).addOnSuccessListener(MainActivity.this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            final UploadTask uploadTask = ref.putFile(url);
+            /*ref.putFile(url).addOnSuccessListener(MainActivity.this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
                     FriendlyMessage message = new FriendlyMessage(null, mUsername, ref.getDownloadUrl().toString());
                     reference.push().setValue(message);
                 }
-            });
-            /*Task<Uri> uriTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            });*/
+            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
-                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                    if (!task.isSuccessful())
-                        throw task.getException();
-                    else
-                        return ref.getDownloadUrl();
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Task<Uri> task = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                        @Override
+                        public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                            if (!task.isSuccessful())
+                                Log.i("problem", task.getException().toString());
+
+                                return ref.getDownloadUrl();
+                        }
+                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            if (task.isSuccessful()) {
+                                Uri download = task.getResult();
+
+                                FriendlyMessage message = new FriendlyMessage(null, mUsername, download.toString());
+                                reference.push().setValue(message);
+                            }
+                        }
+                    });
+
                 }
             });
-*/
+
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
