@@ -263,7 +263,15 @@ public class MainActivity extends AppCompatActivity {
             // First creating the place or the ref at which the file will be saved
             final StorageReference ref = mReference.child(url.getLastPathSegment());
             UploadTask uploadTask = ref.putFile(url);
-            Task<Uri> uriTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            ref.putFile(url).addOnSuccessListener(MainActivity.this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                    FriendlyMessage message = new FriendlyMessage(null, mUsername, ref.getDownloadUrl().toString());
+                    reference.push().setValue(message);
+                }
+            });
+            /*Task<Uri> uriTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                 @Override
                 public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
                     if (!task.isSuccessful())
@@ -272,10 +280,7 @@ public class MainActivity extends AppCompatActivity {
                         return ref.getDownloadUrl();
                 }
             });
-
-            FriendlyMessage message = new FriendlyMessage(null, mUsername, uriTask.toString());
-            reference.push().setValue(message);
-            mMessageAdapter.notifyDataSetChanged();
+*/
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
