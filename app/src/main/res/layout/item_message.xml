@@ -25,6 +25,7 @@
         android:id="@+id/nameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="	#7297d6"
         android:layout_weight="0"
         android:textAppearance="?android:attr/textAppearanceSmall"
         tools:text="Name" />
